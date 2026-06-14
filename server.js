@@ -6,7 +6,11 @@ const path = require('path');
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
-  cors: { origin: '*', methods: ['GET', 'POST'] }
+  cors: { origin: '*', methods: ['GET', 'POST'] },
+  transports: ['polling', 'websocket'],
+  allowEIO3: true,
+  pingTimeout: 60000,
+  pingInterval: 25000
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -76,6 +80,24 @@ io.on('connection', (socket) => {
 
   socket.on('voice-toggle', ({ roomCode, enabled }) => {
     socket.to(roomCode).emit('voice-toggle', { userId: socket.id, enabled });
+  });
+
+  socket.on('leave-room', ({ roomCode }) => {
+    if (rooms[roomCode]) {
+      const idx = rooms[roomCode].users.findIndex(u => u.id === socket.id);
+      if (idx !== -1) {
+        rooms[roomCode].users.splice(idx, 1);
+        socket.leave(roomCode);
+        io.to(roomCode).emit('users-update', rooms[roomCode].users);
+        io.to(roomCode).emit('user-left', { userId: socket.id });
+        io.to(roomCode).emit('chat-message', {
+          type: 'system',
+          message: 'Someone left the room',
+          timestamp: Date.now()
+        });
+        if (rooms[roomCode].users.length === 0) delete rooms[roomCode];
+      }
+    }
   });
 
   socket.on('disconnect', () => {

@@ -54,12 +54,49 @@ function cacheDom() {
   dom.toastContainer = $('#toast-container');
 }
 
+/* ====== CONNECTION STATUS ====== */
+function setConnStatus(status) {
+  const dot = $('#conn-dot');
+  const text = $('#conn-text');
+  dot.className = 'conn-dot ' + status;
+  const labels = { connected: 'Connected', connecting: 'Connecting...', disconnected: 'Disconnected' };
+  text.textContent = labels[status] || status;
+}
+
 /* ====== SOCKET ====== */
 function connectSocket() {
-  state.socket = io();
+  state.socket = io({
+    transports: ['polling', 'websocket'],
+    upgrade: true,
+    rememberUpgrade: false,
+    reconnection: true,
+    reconnectionAttempts: Infinity,
+    reconnectionDelay: 1000,
+    reconnectionDelayMax: 5000
+  });
 
   state.socket.on('connect', () => {
     state.myId = state.socket.id;
+    setConnStatus('connected');
+    console.log('Socket connected:', state.myId);
+  });
+
+  state.socket.on('disconnect', (reason) => {
+    setConnStatus('disconnected');
+    console.log('Socket disconnected:', reason);
+  });
+
+  state.socket.on('connect_error', (err) => {
+    setConnStatus('connecting');
+    console.error('Connection error:', err.message);
+  });
+
+  state.socket.on('reconnect_attempt', () => {
+    setConnStatus('connecting');
+  });
+
+  state.socket.on('reconnect', () => {
+    setConnStatus('connected');
   });
 
   state.socket.on('room-created', ({ roomCode }) => {
@@ -127,9 +164,6 @@ function connectSocket() {
     }
   });
 
-  state.socket.on('connect_error', () => {
-    toast('Connection lost. Reconnecting...', 'error');
-  });
 }
 
 /* ====== VIEW MANAGEMENT ====== */
@@ -158,14 +192,24 @@ function getUsername() {
 dom.createBtn.addEventListener('click', () => {
   state.username = getUsername();
   dom.homeError.textContent = '';
+  if (!state.socket.connected) {
+    dom.homeError.textContent = 'Not connected to server. Please wait...';
+    return;
+  }
+  dom.createBtn.disabled = true;
+  dom.createBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
   state.socket.emit('create-room', (res) => {
-    if (res.roomCode) {
+    dom.createBtn.disabled = false;
+    dom.createBtn.innerHTML = '<i class="fas fa-plus-circle"></i> Create Room';
+    if (res && res.roomCode) {
       state.roomCode = res.roomCode;
       dom.roomCodeDisplay.textContent = res.roomCode;
       showView('room');
       addSystemMsg(`Room created: ${res.roomCode}`);
       initMap();
       startLocation();
+    } else {
+      dom.homeError.textContent = 'Failed to create room. Try again.';
     }
   });
 });
@@ -178,8 +222,16 @@ dom.joinBtn.addEventListener('click', () => {
   }
   state.username = getUsername();
   dom.homeError.textContent = '';
+  if (!state.socket.connected) {
+    dom.homeError.textContent = 'Not connected to server. Please wait...';
+    return;
+  }
+  dom.joinBtn.disabled = true;
+  dom.joinBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Joining...';
   state.socket.emit('join-room', { roomCode }, (res) => {
-    if (res.success) {
+    dom.joinBtn.disabled = false;
+    dom.joinBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Join';
+    if (res && res.success) {
       state.roomCode = res.roomCode;
       dom.roomCodeDisplay.textContent = res.roomCode;
       showView('room');
@@ -194,7 +246,7 @@ dom.joinBtn.addEventListener('click', () => {
       initMap();
       startLocation();
     } else {
-      dom.homeError.textContent = res.message || 'Room not found';
+      dom.homeError.textContent = (res && res.message) || 'Room not found';
     }
   });
 });
@@ -550,35 +602,36 @@ dom.shareBtn.addEventListener('click', () => {
 
 /* ====== LEAVE ====== */
 dom.leaveBtn.addEventListener('click', () => {
-  state.socket.disconnect();
-  cleanup();
-  showView('home');
-  state.socket.connect();
-  connectSocket();
-});
-
-function cleanup() {
-  if (state.locationWatchId !== null) {
-    navigator.geolocation.clearWatch(state.locationWatchId);
-    state.locationWatchId = null;
+  if (state.roomCode) {
+    state.socket.emit('leave-room', { roomCode: state.roomCode });
   }
-  if (state.focusInterval) clearInterval(state.focusInterval);
   if (state.myStream) {
     state.myStream.getTracks().forEach((t) => t.stop());
     state.myStream = null;
   }
   Object.keys(state.peers).forEach(destroyPeer);
-  Object.keys(state.markers).forEach((k) => {
-    if (state.markers[k] && state.markers[k]._map) state.map.removeLayer(state.markers[k]);
-  });
+  if (state.locationWatchId !== null) {
+    navigator.geolocation.clearWatch(state.locationWatchId);
+    state.locationWatchId = null;
+  }
+  if (state.focusInterval) clearInterval(state.focusInterval);
+  if (state.map) {
+    Object.keys(state.markers).forEach((k) => {
+      if (state.markers[k] && state.markers[k]._map) state.map.removeLayer(state.markers[k]);
+    });
+    state.map.remove();
+    state.map = null;
+  }
   state.markers = {};
   state.members = {};
   state.roomCode = null;
   state.voiceEnabled = false;
   state.locationEnabled = false;
   dom.messages.innerHTML = '<div class="msg-placeholder"><i class="fas fa-comments"></i><p>No messages yet. Start the conversation!</p></div>';
+  showView('home');
+  dom.homeError.textContent = '';
   dom.roomInput.value = '';
-}
+});
 
 /* ====== TABS ====== */
 dom.tabs.forEach((tab) => {
@@ -610,10 +663,5 @@ function hashId(id) {
 /* ====== BOOT ====== */
 cacheDom();
 connectSocket();
-
-// Allow Enter to join
-dom.roomInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') dom.joinBtn.click();
-});
 
 console.log('🚀 Fada loaded. Connect in space.');

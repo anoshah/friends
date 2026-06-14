@@ -361,6 +361,34 @@ input::placeholder { color: var(--text-muted); }
   min-height: 20px;
 }
 
+/* ====== CONNECTION STATUS ====== */
+.conn-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.conn-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-red);
+  transition: background 0.3s;
+}
+
+.conn-dot.connected { background: var(--accent-green); box-shadow: 0 0 8px rgba(16, 185, 129, 0.5); }
+.conn-dot.connecting { background: var(--accent-orange); animation: blink 1s ease-in-out infinite; }
+.conn-dot.disconnected { background: var(--accent-red); }
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
 .home-footer {
   display: flex;
   justify-content: center;
