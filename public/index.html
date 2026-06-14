@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fada — Connect in Space</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='none' stroke='%237c3aed' stroke-width='3'/><circle cx='16' cy='16' r='4' fill='%237c3aed'/></svg>" />
+</head>
+<body>
+
+  <!-- ====== HOME VIEW ====== -->
+  <div id="home-view" class="view active">
+    <div class="home-bg">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
+    <div class="home-card">
+      <div class="logo">
+        <div class="logo-icon"><i class="fas fa-satellite"></i></div>
+        <h1>Fada</h1>
+        <p class="tagline">Connect in Space</p>
+      </div>
+
+      <div class="username-section">
+        <label for="username-input">Your Name</label>
+        <input type="text" id="username-input" placeholder="Enter your name..." maxlength="20" />
+      </div>
+
+      <button id="create-btn" class="btn btn-primary">
+        <i class="fas fa-plus-circle"></i> Create Room
+      </button>
+
+      <div class="divider"><span>or</span></div>
+
+      <div class="join-section">
+        <input type="text" id="room-input" placeholder="Enter room code..." maxlength="6" inputmode="numeric" pattern="[0-9]*" />
+        <button id="join-btn" class="btn btn-secondary">
+          <i class="fas fa-sign-in-alt"></i> Join
+        </button>
+      </div>
+
+      <p id="home-error" class="error-msg"></p>
+
+      <div class="home-footer">
+        <span><i class="fas fa-microphone"></i> Voice</span>
+        <span><i class="fas fa-comment"></i> Chat</span>
+        <span><i class="fas fa-map-marker-alt"></i> Location</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== ROOM VIEW ====== -->
+  <div id="room-view" class="view">
+    <!-- Header -->
+    <header class="room-header">
+      <div class="header-left">
+        <div class="logo-icon small"><i class="fas fa-satellite"></i></div>
+        <span class="header-title">Fada</span>
+        <div class="room-badge">
+          <i class="fas fa-hashtag"></i>
+          <span id="room-code-display">------</span>
+        </div>
+      </div>
+      <div class="header-center">
+        <span id="member-count"><i class="fas fa-user"></i> 0</span>
+        <button id="share-btn" class="btn btn-ghost" title="Share Room Code">
+          <i class="fas fa-share-alt"></i> Share
+        </button>
+      </div>
+      <div class="header-right">
+        <button id="leave-btn" class="btn btn-danger">
+          <i class="fas fa-sign-out-alt"></i> Leave
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="room-main">
+      <!-- Map -->
+      <div class="map-container" id="map-container">
+        <div id="map"></div>
+        <div class="map-overlay-top">
+          <span class="map-label"><i class="fas fa-globe-asia"></i> Live Map</span>
+          <button id="map-focus-btn" class="btn btn-tiny" title="Fit all users"><i class="fas fa-expand"></i></button>
+        </div>
+        <div class="map-overlay-bottom">
+          <button id="voice-btn" class="btn btn-circle" title="Toggle Microphone">
+            <i class="fas fa-microphone"></i>
+          </button>
+          <button id="location-btn" class="btn btn-circle active" title="Toggle Location Sharing">
+            <i class="fas fa-location-dot"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Side Panel -->
+      <div class="side-panel">
+        <div class="tabs">
+          <button class="tab active" data-tab="chat"><i class="fas fa-comment-dots"></i> Chat</button>
+          <button class="tab" data-tab="members"><i class="fas fa-users"></i> Members</button>
+        </div>
+
+        <!-- Chat Tab -->
+        <div class="tab-content active" id="tab-chat">
+          <div class="messages" id="messages">
+            <div class="msg-placeholder">
+              <i class="fas fa-comments"></i>
+              <p>No messages yet. Start the conversation!</p>
+            </div>
+          </div>
+          <div class="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Type a message..." maxlength="500" />
+            <button id="chat-send-btn" class="btn btn-icon"><i class="fas fa-paper-plane"></i></button>
+          </div>
+        </div>
+
+        <!-- Members Tab -->
+        <div class="tab-content" id="tab-members">
+          <div class="members-list" id="members-list">
+            <div class="msg-placeholder">
+              <i class="fas fa-users"></i>
+              <p>Waiting for members...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div id="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/simple-peer@9.11.1/simplepeer.min.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
