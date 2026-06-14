@@ -1,3 +1,6 @@
+/* ====== CONFIG ====== */
+const SERVER_URL = 'https://fada.natayj.com';
+
 /* ====== STATE ====== */
 const state = {
   socket: null,
@@ -69,13 +72,12 @@ function setConnStatus(status, detail) {
 
 /* ====== SOCKET ====== */
 function connectSocket() {
-  const serverUrl = window.location.origin;
-  console.log('Connecting to server:', serverUrl);
+  console.log('Connecting to server:', SERVER_URL);
 
   setConnStatus('connecting');
-  $('#conn-text').textContent = 'Connecting to ' + serverUrl + '...';
+  $('#conn-text').textContent = 'Connecting to ' + SERVER_URL + '...';
 
-  state.socket = io(serverUrl, {
+  state.socket = io(SERVER_URL, {
     transports: ['polling', 'websocket'],
     upgrade: false,
     rememberUpgrade: true,
@@ -695,7 +697,7 @@ function hashId(id) {
 /* ====== HEALTH CHECK ====== */
 async function checkHealth() {
   try {
-    const res = await fetch(window.location.origin + '/health', { signal: AbortSignal.timeout(5000) });
+    const res = await fetch(SERVER_URL + '/health', { signal: AbortSignal.timeout(5000) });
     const data = await res.json();
     console.log('Health check OK:', data);
     return true;
@@ -708,7 +710,7 @@ async function checkHealth() {
 /* ====== BOOT ====== */
 checkHealth().then((ok) => {
   if (!ok) {
-    dom.homeError.textContent = '⚠ Server unreachable at ' + window.location.origin + ' — is your Node.js server running?';
+    dom.homeError.textContent = '⚠ Server unreachable at ' + SERVER_URL + ' — is your Node.js server running?';
     setConnStatus('disconnected', 'Server not responding');
   }
 });
