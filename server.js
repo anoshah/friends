@@ -15,6 +15,10 @@ const io = socketIo(server, {
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', uptime: process.uptime(), connections: Object.keys(io.sockets.sockets).length });
+});
+
 const rooms = {};
 
 io.on('connection', (socket) => {

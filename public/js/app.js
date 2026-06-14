@@ -55,48 +55,72 @@ function cacheDom() {
 }
 
 /* ====== CONNECTION STATUS ====== */
-function setConnStatus(status) {
+function setConnStatus(status, detail) {
   const dot = $('#conn-dot');
   const text = $('#conn-text');
+  const err = $('#home-error');
   dot.className = 'conn-dot ' + status;
   const labels = { connected: 'Connected', connecting: 'Connecting...', disconnected: 'Disconnected' };
   text.textContent = labels[status] || status;
+  if (detail && status === 'disconnected') {
+    err.textContent = detail;
+  }
 }
 
 /* ====== SOCKET ====== */
 function connectSocket() {
-  state.socket = io({
+  const serverUrl = window.location.origin;
+  console.log('Connecting to server:', serverUrl);
+
+  setConnStatus('connecting');
+  $('#conn-text').textContent = 'Connecting to ' + serverUrl + '...';
+
+  state.socket = io(serverUrl, {
     transports: ['polling', 'websocket'],
-    upgrade: true,
-    rememberUpgrade: false,
+    upgrade: false,
+    rememberUpgrade: true,
     reconnection: true,
-    reconnectionAttempts: Infinity,
-    reconnectionDelay: 1000,
-    reconnectionDelayMax: 5000
+    reconnectionAttempts: 20,
+    reconnectionDelay: 2000,
+    reconnectionDelayMax: 10000,
+    timeout: 20000
   });
 
   state.socket.on('connect', () => {
     state.myId = state.socket.id;
     setConnStatus('connected');
+    dom.homeError.textContent = '';
     console.log('Socket connected:', state.myId);
   });
 
   state.socket.on('disconnect', (reason) => {
-    setConnStatus('disconnected');
+    setConnStatus('disconnected', 'Connection lost: ' + reason);
     console.log('Socket disconnected:', reason);
   });
 
   state.socket.on('connect_error', (err) => {
+    const msg = err.message;
     setConnStatus('connecting');
-    console.error('Connection error:', err.message);
+    dom.homeError.textContent = 'Server unreachable: ' + msg;
+    console.error('Socket error:', msg);
   });
 
-  state.socket.on('reconnect_attempt', () => {
+  state.socket.on('reconnect_attempt', (attempt) => {
     setConnStatus('connecting');
+    dom.homeError.textContent = 'Reconnecting (attempt ' + attempt + ')...';
   });
 
   state.socket.on('reconnect', () => {
     setConnStatus('connected');
+    dom.homeError.textContent = '';
+  });
+
+  state.socket.on('reconnect_error', (err) => {
+    dom.homeError.textContent = 'Reconnect failed: ' + err.message;
+  });
+
+  state.socket.on('reconnect_failed', () => {
+    setConnStatus('disconnected', 'Could not reconnect to server. Refresh the page.');
   });
 
   state.socket.on('room-created', ({ roomCode }) => {
@@ -660,8 +684,31 @@ function hashId(id) {
   return Math.abs(hash);
 }
 
+/* ====== HEALTH CHECK ====== */
+async function checkHealth() {
+  try {
+    const res = await fetch(window.location.origin + '/health', { signal: AbortSignal.timeout(5000) });
+    const data = await res.json();
+    console.log('Health check OK:', data);
+    return true;
+  } catch (err) {
+    console.warn('Health check failed:', err.message);
+    return false;
+  }
+}
+
 /* ====== BOOT ====== */
 cacheDom();
-connectSocket();
 
-console.log('🚀 Fada loaded. Connect in space.');
+if (!dom.createBtn) {
+  console.error('FATAL: #create-btn not found in DOM. Check your HTML.');
+} else {
+  checkHealth().then((ok) => {
+    if (!ok) {
+      dom.homeError.textContent = '⚠ Server unreachable at ' + window.location.origin + ' — is your Node.js server running?';
+      setConnStatus('disconnected', 'Server not responding');
+    }
+  });
+  connectSocket();
+  console.log('🚀 Fada loaded. Connect in space.');
+}
