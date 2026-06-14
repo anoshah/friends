@@ -213,6 +213,14 @@ function getUsername() {
   return name || 'Anonymous';
 }
 
+document.addEventListener('DOMContentLoaded', function () {
+  cacheDom();
+
+  if (!dom.createBtn) {
+    console.error('FATAL: #create-btn not found. DOM may not be ready.');
+    return;
+  }
+
 dom.createBtn.addEventListener('click', () => {
   state.username = getUsername();
   dom.homeError.textContent = '';
@@ -698,17 +706,13 @@ async function checkHealth() {
 }
 
 /* ====== BOOT ====== */
-cacheDom();
+checkHealth().then((ok) => {
+  if (!ok) {
+    dom.homeError.textContent = '⚠ Server unreachable at ' + window.location.origin + ' — is your Node.js server running?';
+    setConnStatus('disconnected', 'Server not responding');
+  }
+});
+connectSocket();
+console.log('🚀 Fada loaded. Connect in space.');
 
-if (!dom.createBtn) {
-  console.error('FATAL: #create-btn not found in DOM. Check your HTML.');
-} else {
-  checkHealth().then((ok) => {
-    if (!ok) {
-      dom.homeError.textContent = '⚠ Server unreachable at ' + window.location.origin + ' — is your Node.js server running?';
-      setConnStatus('disconnected', 'Server not responding');
-    }
-  });
-  connectSocket();
-  console.log('🚀 Fada loaded. Connect in space.');
-}
+}); // end DOMContentLoaded
