@@ -209,7 +209,7 @@ async function initVoicePeer(userId, initiator) {
     if (!state.myStream) {
       state.myStream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
       state.voiceEnabled = true;
-      dom.voiceBtn.classList.add('active');
+      dom.voiceBtn.classList.add('recording');
       dom.voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
     }
     const peer = new SimplePeer({ initiator, stream: state.myStream, trickle: false, config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] } });
@@ -389,7 +389,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (state.voiceEnabled) {
       if (state.myStream) { state.myStream.getTracks().forEach((t) => t.stop()); state.myStream = null; }
       state.voiceEnabled = false;
-      dom.voiceBtn.classList.remove('active');
+      dom.voiceBtn.classList.remove('recording');
       dom.voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
       Object.keys(state.peers).forEach(destroyPeer);
       if (state.roomCode) state.socket.emit('voice-toggle', { roomCode: state.roomCode, enabled: false });
@@ -397,7 +397,7 @@ document.addEventListener('DOMContentLoaded', function () {
       try {
         state.myStream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
         state.voiceEnabled = true;
-        dom.voiceBtn.classList.add('active');
+        dom.voiceBtn.classList.add('recording');
         dom.voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
         Object.keys(state.members).forEach((uid) => { if (uid !== state.myId) initVoicePeer(uid, true); });
         if (state.roomCode) state.socket.emit('voice-toggle', { roomCode: state.roomCode, enabled: true });

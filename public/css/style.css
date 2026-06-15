@@ -279,9 +279,31 @@ input::placeholder { color: var(--text-muted); }
   backdrop-filter: blur(12px);
 }
 
-.btn-circle:hover {
-  background: var(--bg-card-hover);
-  border-color: var(--text-muted);
+#voice-btn {
+  background: var(--accent-green);
+  border-color: var(--accent-green);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
+  transition: all 0.3s;
+}
+
+#voice-btn:hover {
+  background: #059669;
+  border-color: #059669;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+  transform: scale(1.1);
+}
+
+#voice-btn.recording {
+  background: var(--accent-red);
+  border-color: var(--accent-red);
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+  animation: pulse-record 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-record {
+  0%, 100% { box-shadow: 0 0 12px rgba(239, 68, 68, 0.4); }
+  50% { box-shadow: 0 0 25px rgba(239, 68, 68, 0.7); }
 }
 
 .btn-circle.active {
