@@ -284,15 +284,6 @@ dom.joinBtn.addEventListener('click', () => {
     }
   });
 });
-      renderMembers();
-      dom.memberCount.innerHTML = `<i class="fas fa-user"></i> ${res.users.length}`;
-      initMap();
-      startLocation();
-    } else {
-      dom.homeError.textContent = (res && res.message) || 'Room not found';
-    }
-  });
-});
 
 dom.roomInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') dom.joinBtn.click();
