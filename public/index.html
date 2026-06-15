@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fada — Connect in Space</title>
+  <title>Fada — تواصل في الفضاء</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -27,20 +27,20 @@
       </div>
 
       <div class="username-section">
-        <label for="username-input">Your Name</label>
-        <input type="text" id="username-input" placeholder="Enter your name..." maxlength="20" />
+        <label for="username-input">اسمك</label>
+        <input type="text" id="username-input" placeholder="أدخل اسمك..." maxlength="20" />
       </div>
 
       <button id="create-btn" class="btn btn-primary">
-        <i class="fas fa-plus-circle"></i> Create Room
+        <i class="fas fa-plus-circle"></i> إنشاء غرفة
       </button>
 
-      <div class="divider"><span>or</span></div>
+      <div class="divider"><span>أو</span></div>
 
       <div class="join-section">
-        <input type="text" id="room-input" placeholder="Enter room code..." maxlength="6" inputmode="numeric" pattern="[0-9]*" />
+        <input type="text" id="room-input" placeholder="أدخل رمز الغرفة..." maxlength="6" inputmode="numeric" pattern="[0-9]*" />
         <button id="join-btn" class="btn btn-secondary">
-          <i class="fas fa-sign-in-alt"></i> Join
+          <i class="fas fa-sign-in-alt"></i> انضمام
         </button>
       </div>
 
@@ -48,13 +48,13 @@
 
       <div id="conn-status" class="conn-status">
         <span class="conn-dot" id="conn-dot"></span>
-        <span id="conn-text">Connecting...</span>
+        <span id="conn-text">جاري الاتصال...</span>
       </div>
 
       <div class="home-footer">
-        <span><i class="fas fa-microphone"></i> Voice</span>
-        <span><i class="fas fa-comment"></i> Chat</span>
-        <span><i class="fas fa-map-marker-alt"></i> Location</span>
+        <span><i class="fas fa-microphone"></i> صوت</span>
+        <span><i class="fas fa-comment"></i> دردشة</span>
+        <span><i class="fas fa-map-marker-alt"></i> موقع</span>
       </div>
     </div>
   </div>
@@ -73,67 +73,80 @@
       </div>
       <div class="header-center">
         <span id="member-count"><i class="fas fa-user"></i> 0</span>
-        <button id="share-btn" class="btn btn-ghost" title="Share Room Code">
-          <i class="fas fa-share-alt"></i> Share
+        <button id="share-btn" class="btn btn-ghost" title="مشاركة رمز الغرفة">
+          <i class="fas fa-share-alt"></i> مشاركة
         </button>
       </div>
       <div class="header-right">
         <button id="leave-btn" class="btn btn-danger">
-          <i class="fas fa-sign-out-alt"></i> Leave
+          <i class="fas fa-sign-out-alt"></i> مغادرة
         </button>
       </div>
     </header>
 
     <!-- Main Content -->
     <div class="room-main">
-      <!-- Map -->
-      <div class="map-container" id="map-container">
-        <div id="map"></div>
-        <div class="map-overlay-top">
-          <span class="map-label"><i class="fas fa-globe-asia"></i> Live Map</span>
-          <button id="map-focus-btn" class="btn btn-tiny" title="Fit all users"><i class="fas fa-expand"></i></button>
-        </div>
-        <div class="map-overlay-bottom">
-          <button id="voice-btn" class="btn btn-circle" title="Toggle Microphone">
+      <!-- Tab Contents -->
+      <div class="tab-contents">
+        <!-- Map Tab (الموقع) -->
+        <div class="tab-content active" id="tab-map">
+          <div class="map-container" id="map-container">
+            <div id="map"></div>
+            <div class="map-overlay-top">
+              <span class="map-label"><i class="fas fa-globe-asia"></i> خرائط مباشرة</span>
+              <button id="map-focus-btn" class="btn btn-tiny" title="عرض جميع المستخدمين"><i class="fas fa-expand"></i></button>
+            </div>
+            <div class="map-overlay-bottom">
+          <button id="voice-btn" class="btn btn-circle" title="تشغيل/إيقاف الميكروفون">
             <i class="fas fa-microphone"></i>
           </button>
-          <button id="location-btn" class="btn btn-circle active" title="Toggle Location Sharing">
+          <button id="location-btn" class="btn btn-circle active" title="تشغيل/إيقاف مشاركة الموقع">
             <i class="fas fa-location-dot"></i>
           </button>
-        </div>
-      </div>
-
-      <!-- Side Panel -->
-      <div class="side-panel">
-        <div class="tabs">
-          <button class="tab active" data-tab="chat"><i class="fas fa-comment-dots"></i> Chat</button>
-          <button class="tab" data-tab="members"><i class="fas fa-users"></i> Members</button>
-        </div>
-
-        <!-- Chat Tab -->
-        <div class="tab-content active" id="tab-chat">
-          <div class="messages" id="messages">
-            <div class="msg-placeholder">
-              <i class="fas fa-comments"></i>
-              <p>No messages yet. Start the conversation!</p>
             </div>
           </div>
-          <div class="chat-input-area">
-            <input type="text" id="chat-input" placeholder="Type a message..." maxlength="500" />
-            <button id="chat-send-btn" class="btn btn-icon"><i class="fas fa-paper-plane"></i></button>
-          </div>
         </div>
 
-        <!-- Members Tab -->
+        <!-- Members Tab (الأعضاء) -->
         <div class="tab-content" id="tab-members">
           <div class="members-list" id="members-list">
             <div class="msg-placeholder">
               <i class="fas fa-users"></i>
-              <p>Waiting for members...</p>
+              <p>في انتظار الأعضاء...</p>
             </div>
           </div>
         </div>
+
+        <!-- Chat Tab (الدردشة) -->
+        <div class="tab-content" id="tab-chat">
+          <div class="messages" id="messages">
+            <div class="msg-placeholder">
+              <i class="fas fa-comments"></i>
+              <p>لا توجد رسائل بعد. ابدأ المحادثة!</p>
+            </div>
+          </div>
+          <div class="chat-input-area">
+            <input type="text" id="chat-input" placeholder="اكتب رسالة..." maxlength="500" />
+            <button id="chat-send-btn" class="btn btn-icon"><i class="fas fa-paper-plane"></i></button>
+          </div>
+        </div>
       </div>
+
+      <!-- Bottom Navigation -->
+      <nav class="bottom-nav">
+        <button class="nav-tab active" data-tab="map">
+          <i class="fas fa-map-location-dot"></i>
+          <span>الموقع</span>
+        </button>
+        <button class="nav-tab" data-tab="members">
+          <i class="fas fa-users"></i>
+          <span>الأعضاء</span>
+        </button>
+        <button class="nav-tab" data-tab="chat">
+          <i class="fas fa-comment-dots"></i>
+          <span>الدردشة</span>
+        </button>
+      </nav>
     </div>
   </div>
 

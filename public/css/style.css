@@ -515,6 +515,14 @@ input::placeholder { color: var(--text-light); }
 .room-main {
   flex: 1;
   display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ====== TAB CONTENTS ====== */
+.tab-contents {
+  flex: 1;
+  position: relative;
   overflow: hidden;
 }
 
@@ -523,6 +531,7 @@ input::placeholder { color: var(--text-light); }
   flex: 1;
   position: relative;
   min-width: 0;
+  height: 100%;
 }
 
 #map {
@@ -604,46 +613,68 @@ input::placeholder { color: var(--text-light); }
   flex-shrink: 0;
 }
 
-/* ====== TABS ====== */
-.tabs {
+/* ====== BOTTOM NAVIGATION ====== */
+.bottom-nav {
   display: flex;
-  border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
   flex-shrink: 0;
-  background: rgba(255,255,255,0.5);
+  padding: 6px 0;
+  padding-bottom: env(safe-area-inset-bottom, 6px);
 }
 
-.tab {
+.nav-tab {
   flex: 1;
-  padding: 14px;
-  background: transparent;
-  color: var(--text-light);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 4px;
+  padding: 10px 8px;
+  background: transparent;
+  border: none;
+  color: var(--text-light);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
   transition: var(--transition);
-  border-bottom: 2.5px solid transparent;
+  position: relative;
 }
 
-.tab:hover {
+.nav-tab i {
+  font-size: 20px;
+  transition: var(--transition);
+}
+
+.nav-tab:hover {
   color: var(--text-medium);
-  background: var(--bg-hover);
 }
 
-.tab.active {
+.nav-tab.active {
   color: var(--accent-blue);
-  border-bottom-color: var(--accent-blue);
-  font-weight: 600;
 }
 
+.nav-tab.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 3px;
+  background: var(--accent-blue);
+  border-radius: 0 0 4px 4px;
+}
+
+/* ====== TAB CONTENT ====== */
 .tab-content {
   display: none;
   flex: 1;
   flex-direction: column;
   overflow: hidden;
+  position: absolute;
+  inset: 0;
 }
 
 .tab-content.active {
@@ -873,15 +904,6 @@ input::placeholder { color: var(--text-light); }
 
 /* ====== RESPONSIVE ====== */
 @media (max-width: 900px) {
-  .room-main {
-    flex-direction: column;
-  }
-  .side-panel {
-    width: 100%;
-    height: 42vh;
-    border-left: none;
-    border-top: 1px solid var(--border);
-  }
   .home-card {
     padding: 36px 28px;
   }
@@ -889,6 +911,12 @@ input::placeholder { color: var(--text-light); }
     padding: 0 14px;
   }
   .header-title { display: none; }
+  .nav-tab span {
+    font-size: 10px;
+  }
+  .nav-tab i {
+    font-size: 18px;
+  }
 }
 
 @media (max-width: 480px) {

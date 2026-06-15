@@ -29,7 +29,7 @@ function cacheDom() {
   dom.chatInput = $('#chat-input');
   dom.chatSendBtn = $('#chat-send-btn');
   dom.membersList = $('#members-list');
-  dom.tabs = $$('.tab');
+  dom.navTabs = $$('.nav-tab');
   dom.tabContents = $$('.tab-content');
   dom.voiceBtn = $('#voice-btn');
   dom.locationBtn = $('#location-btn');
@@ -43,7 +43,7 @@ function setConnStatus(status, detail) {
   const text = $('#conn-text');
   const err = $('#home-error');
   dot.className = 'conn-dot ' + status;
-  const labels = { connected: 'Connected', connecting: 'Connecting...', disconnected: 'Disconnected' };
+  const labels = { connected: 'متصل', connecting: 'جاري الاتصال...', disconnected: 'غير متصل' };
   text.textContent = labels[status] || status;
   if (detail && status === 'disconnected') err.textContent = detail;
 }
@@ -105,7 +105,7 @@ function renderMembers() {
   const list = dom.membersList;
   const entries = Object.values(state.members);
   if (entries.length === 0) {
-    list.innerHTML = '<div class="msg-placeholder"><i class="fas fa-users"></i><p>Waiting for members...</p></div>';
+    list.innerHTML = '<div class="msg-placeholder"><i class="fas fa-users"></i><p>في انتظار الأعضاء...</p></div>';
     return;
   }
   list.innerHTML = entries.map((m) => {
@@ -115,8 +115,8 @@ function renderMembers() {
     return '<div class="member-item" data-uid="' + m.id + '">' +
       '<div class="member-avatar" style="background:' + COLORS[colorIdx] + '">' + (isMe ? state.username[0].toUpperCase() || '?' : initial) + '</div>' +
       '<div class="member-info">' +
-        '<div class="member-name">' + (isMe ? state.username + ' (you)' : m.username || 'Anonymous') + '</div>' +
-        '<div class="member-status">' + (m.lat ? '<i class="fas fa-map-pin"></i> Location shared' : '<i class="fas fa-map-pin"></i> No location') + '</div>' +
+        '<div class="member-name">' + (isMe ? state.username + ' (أنت)' : m.username || 'مجهول') + '</div>' +
+        '<div class="member-status">' + (m.lat ? '<i class="fas fa-map-pin"></i> الموقع مشترك' : '<i class="fas fa-map-pin"></i> لا يوجد موقع') + '</div>' +
       '</div>' +
       '<div class="member-voice off"><i class="fas fa-fw fa-microphone-slash"></i></div>' +
     '</div>';
@@ -161,13 +161,13 @@ function fitMapToMarkers() {
 }
 
 function startLocation() {
-  if (!navigator.geolocation) { toast('Geolocation not supported', 'error'); return; }
+  if (!navigator.geolocation) { toast('الموقع الجغرافي غير مدعوم', 'error'); return; }
   state.locationEnabled = true;
   dom.locationBtn.classList.add('active');
   dom.locationBtn.innerHTML = '<i class="fas fa-location-dot"></i>';
   navigator.geolocation.getCurrentPosition(
     (pos) => sendLocation(pos.coords.latitude, pos.coords.longitude),
-    () => toast('Could not get location. Check permissions.', 'error'),
+    () => toast('تعذر الحصول على الموقع. تحقق من الأذونات.', 'error'),
     { enableHighAccuracy: true, timeout: 10000 }
   );
   state.locationWatchId = navigator.geolocation.watchPosition(
@@ -219,7 +219,7 @@ async function initVoicePeer(userId, initiator) {
     peer.on('close', () => destroyPeer(userId));
     state.peers[userId] = peer;
   } catch (err) {
-    toast(err.name === 'NotAllowedError' ? 'Microphone access denied' : err.name === 'NotFoundError' ? 'No microphone found' : 'Voice unavailable', 'error');
+    toast(err.name === 'NotAllowedError' ? 'تم رفض الوصول إلى الميكروفون' : err.name === 'NotFoundError' ? 'لم يتم العثور على ميكروفون' : 'الصوت غير متاح', 'error');
   }
 }
 
@@ -233,7 +233,7 @@ function sendChat() {
 function connectSocket() {
   console.log('Connecting to server:', SERVER_URL);
   setConnStatus('connecting');
-  $('#conn-text').textContent = 'Connecting to ' + SERVER_URL + '...';
+  $('#conn-text').textContent = 'جاري الاتصال بـ ' + SERVER_URL + '...';
 
   state.socket = io(SERVER_URL, {
     transports: ['polling', 'websocket'], upgrade: false, rememberUpgrade: true,
@@ -241,17 +241,17 @@ function connectSocket() {
   });
 
   state.socket.on('connect', () => { state.myId = state.socket.id; setConnStatus('connected'); dom.homeError.textContent = ''; console.log('Connected:', state.myId); });
-  state.socket.on('disconnect', (r) => { setConnStatus('disconnected', 'Lost: ' + r); console.log('Disconnected:', r); });
-  state.socket.on('connect_error', (err) => { setConnStatus('connecting'); dom.homeError.textContent = 'Server error: ' + err.message; console.error('Error:', err.message); });
-  state.socket.on('reconnect_attempt', (a) => { setConnStatus('connecting'); dom.homeError.textContent = 'Reconnecting (' + a + ')...'; });
+  state.socket.on('disconnect', (r) => { setConnStatus('disconnected', 'انقطع الاتصال: ' + r); console.log('Disconnected:', r); });
+  state.socket.on('connect_error', (err) => { setConnStatus('connecting'); dom.homeError.textContent = 'خطأ في الخادم: ' + err.message; console.error('Error:', err.message); });
+  state.socket.on('reconnect_attempt', (a) => { setConnStatus('connecting'); dom.homeError.textContent = 'جاري إعادة الاتصال (' + a + ')...'; });
   state.socket.on('reconnect', () => { setConnStatus('connected'); dom.homeError.textContent = ''; });
-  state.socket.on('reconnect_failed', () => { setConnStatus('disconnected', 'Could not reconnect. Refresh the page.'); });
+  state.socket.on('reconnect_failed', () => { setConnStatus('disconnected', 'تعذر إعادة الاتصال. قم بتحديث الصفحة.'); });
 
   state.socket.on('room-created', ({ roomCode }) => {
     state.roomCode = roomCode;
     dom.roomCodeDisplay.textContent = roomCode;
     showView('room');
-    addSystemMsg('Room created: ' + roomCode);
+    addSystemMsg('تم إنشاء الغرفة: ' + roomCode);
     initMap();
     startLocation();
   });
@@ -260,7 +260,7 @@ function connectSocket() {
     state.roomCode = roomCode;
     dom.roomCodeDisplay.textContent = roomCode;
     showView('room');
-    addSystemMsg('Joined room ' + roomCode);
+    addSystemMsg('تم الانضمام للغرفة: ' + roomCode);
     initMap();
     startLocation();
   });
@@ -331,50 +331,50 @@ document.addEventListener('DOMContentLoaded', function () {
   cacheDom();
 
   dom.createBtn.addEventListener('click', () => {
-    state.username = dom.usernameInput.value.trim() || 'Anonymous';
+    state.username = dom.usernameInput.value.trim() || 'مجهول';
     dom.homeError.textContent = '';
-    if (!state.socket.connected) { dom.homeError.textContent = 'Not connected. Please wait...'; return; }
+    if (!state.socket.connected) { dom.homeError.textContent = 'غير متصل. يرجى الانتظار...'; return; }
     dom.createBtn.disabled = true;
-    dom.createBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+    dom.createBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإنشاء...';
     state.socket.emit('create-room', { username: state.username }, (res) => {
       dom.createBtn.disabled = false;
-      dom.createBtn.innerHTML = '<i class="fas fa-plus-circle"></i> Create Room';
+      dom.createBtn.innerHTML = '<i class="fas fa-plus-circle"></i> إنشاء غرفة';
       if (res && res.roomCode) {
         state.roomCode = res.roomCode;
         dom.roomCodeDisplay.textContent = res.roomCode;
         showView('room');
-        addSystemMsg('Room created: ' + res.roomCode);
+        addSystemMsg('تم إنشاء الغرفة: ' + res.roomCode);
         initMap();
         startLocation();
       } else {
-        dom.homeError.textContent = 'Failed to create room. Try again.';
+        dom.homeError.textContent = 'فشل إنشاء الغرفة. حاول مرة أخرى.';
       }
     });
   });
 
   dom.joinBtn.addEventListener('click', () => {
     const roomCode = dom.roomInput.value.trim();
-    if (!roomCode || roomCode.length < 4) { dom.homeError.textContent = 'Please enter a valid room code'; return; }
-    state.username = dom.usernameInput.value.trim() || 'Anonymous';
+    if (!roomCode || roomCode.length < 4) { dom.homeError.textContent = 'يرجى إدخال رمز غرفة صالح'; return; }
+    state.username = dom.usernameInput.value.trim() || 'مجهول';
     dom.homeError.textContent = '';
-    if (!state.socket.connected) { dom.homeError.textContent = 'Not connected. Please wait...'; return; }
+    if (!state.socket.connected) { dom.homeError.textContent = 'غير متصل. يرجى الانتظار...'; return; }
     dom.joinBtn.disabled = true;
-    dom.joinBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Joining...';
+    dom.joinBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الانضمام...';
     state.socket.emit('join-room', { roomCode, username: state.username }, (res) => {
       dom.joinBtn.disabled = false;
-      dom.joinBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Join';
+      dom.joinBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> انضمام';
       if (res && res.success) {
         state.roomCode = res.roomCode;
         dom.roomCodeDisplay.textContent = res.roomCode;
         showView('room');
-        addSystemMsg('Joined room ' + res.roomCode);
+        addSystemMsg('تم الانضمام للغرفة: ' + res.roomCode);
         res.users.forEach((u) => { if (u.id !== state.myId) state.members[u.id] = { id: u.id, lat: u.lat, lng: u.lng, username: u.username }; });
         renderMembers();
         dom.memberCount.innerHTML = '<i class="fas fa-user"></i> ' + res.users.length;
         initMap();
         startLocation();
       } else {
-        dom.homeError.textContent = (res && res.message) || 'Room not found';
+        dom.homeError.textContent = (res && res.message) || 'الغرفة غير موجودة';
       }
     });
   });
@@ -401,37 +401,41 @@ document.addEventListener('DOMContentLoaded', function () {
         dom.voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
         Object.keys(state.members).forEach((uid) => { if (uid !== state.myId) initVoicePeer(uid, true); });
         if (state.roomCode) state.socket.emit('voice-toggle', { roomCode: state.roomCode, enabled: true });
-      } catch (err) { toast('Could not access microphone', 'error'); }
+      } catch (err) { toast('تعذر الوصول إلى الميكروفون', 'error'); }
     }
   });
 
   dom.shareBtn.addEventListener('click', () => {
     if (!state.roomCode) return;
     const text = 'Join my Fada room! Code: ' + state.roomCode + '\n' + window.location.origin;
-    if (navigator.share) { navigator.share({ title: 'Fada Room', text }).catch(() => {}); }
-    else { navigator.clipboard.writeText(state.roomCode).then(() => toast('Room code copied!', 'success')).catch(() => toast('Room: ' + state.roomCode, 'info')); }
+    if (navigator.share) { navigator.share({ title: 'غرفة Fada', text }).catch(() => {}); }
+    else { navigator.clipboard.writeText(state.roomCode).then(() => toast('تم نسخ رمز الغرفة!', 'success')).catch(() => toast('الغرفة: ' + state.roomCode, 'info')); }
   });
 
   dom.leaveBtn.addEventListener('click', () => {
     if (state.roomCode) state.socket.emit('leave-room', { roomCode: state.roomCode });
     cleanup();
-    dom.messages.innerHTML = '<div class="msg-placeholder"><i class="fas fa-comments"></i><p>No messages yet. Start the conversation!</p></div>';
+    dom.messages.innerHTML = '<div class="msg-placeholder"><i class="fas fa-comments"></i><p>لا توجد رسائل بعد. ابدأ المحادثة!</p></div>';
+    dom.membersList.innerHTML = '<div class="msg-placeholder"><i class="fas fa-users"></i><p>في انتظار الأعضاء...</p></div>';
     showView('home');
     dom.homeError.textContent = '';
     dom.roomInput.value = '';
   });
 
-  dom.tabs.forEach((tab) => {
+  dom.navTabs.forEach((tab) => {
     tab.addEventListener('click', () => {
-      dom.tabs.forEach((t) => t.classList.remove('active'));
+      dom.navTabs.forEach((t) => t.classList.remove('active'));
       dom.tabContents.forEach((c) => c.classList.remove('active'));
       tab.classList.add('active');
       document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+      if (tab.dataset.tab === 'map' && state.map) {
+        setTimeout(() => state.map.invalidateSize(), 100);
+      }
     });
   });
 
   checkHealth().then((ok) => {
-    if (!ok) { dom.homeError.textContent = 'Server unreachable at ' + SERVER_URL; setConnStatus('disconnected'); }
+    if (!ok) { dom.homeError.textContent = 'الخادم غير متاح على ' + SERVER_URL; setConnStatus('disconnected'); }
   });
 
   connectSocket();
