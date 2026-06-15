@@ -870,6 +870,90 @@ input::placeholder { color: var(--text-light); }
 .member-voice.on { color: var(--accent-green); background: var(--accent-green-light); }
 .member-voice.off { color: var(--text-light); }
 
+/* ====== MEMBER REMOVE BUTTON ====== */
+.member-remove-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent-red-light);
+  color: var(--accent-red);
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  flex-shrink: 0;
+  opacity: 0;
+}
+
+.member-item:hover .member-remove-btn {
+  opacity: 1;
+}
+
+.member-remove-btn:hover {
+  background: var(--accent-red);
+  color: #fff;
+  transform: scale(1.1);
+}
+
+/* ====== MEMBER MUTE BUTTON ====== */
+.member-mute-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent-orange);
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  flex-shrink: 0;
+  opacity: 0;
+}
+
+.member-item:hover .member-mute-btn {
+  opacity: 1;
+}
+
+.member-mute-btn:hover {
+  transform: scale(1.1);
+}
+
+.member-mute-btn.muted {
+  background: var(--accent-red);
+}
+
+/* ====== MUTED BADGE ====== */
+.muted-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--accent-red);
+  background: var(--accent-red-light);
+  padding: 2px 6px;
+  border-radius: var(--radius-pill);
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+/* ====== OWNER BADGE ====== */
+.owner-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--accent-orange);
+  background: #fef3c7;
+  padding: 2px 6px;
+  border-radius: var(--radius-pill);
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
 /* ====== TOASTS ====== */
 #toast-container {
   position: fixed;

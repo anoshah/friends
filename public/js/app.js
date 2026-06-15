@@ -1,10 +1,10 @@
 const SERVER_URL = 'https://fada.natayj.com';
 
 const state = {
-  socket: null, username: '', roomCode: null, myId: null,
+  socket: null, username: '', roomCode: null, myId: null, ownerId: null,
   members: {}, peers: {}, myStream: null, locationWatchId: null,
   myLat: null, myLng: null, locationEnabled: false, voiceEnabled: false,
-  map: null, markers: {}, focusInterval: null,
+  map: null, markers: {}, focusInterval: null, mutedUsers: [],
 };
 
 const COLORS = ['#7c3aed','#06b6d4','#10b981','#f59e0b','#ef4444','#ec4899','#8b5cf6','#14b8a6','#f97316','#3b82f6','#84cc16','#e11d48'];
@@ -108,19 +108,44 @@ function renderMembers() {
     list.innerHTML = '<div class="msg-placeholder"><i class="fas fa-users"></i><p>في انتظار الأعضاء...</p></div>';
     return;
   }
+  const isOwner = state.myId === state.ownerId;
   list.innerHTML = entries.map((m) => {
     const isMe = m.id === state.myId;
     const colorIdx = hashId(m.id) % COLORS.length;
     const initial = m.username ? m.username[0].toUpperCase() : '?';
+    const isMuted = state.mutedUsers.includes(m.id);
+    const muteBtn = (isOwner && !isMe) ? '<button class="member-mute-btn' + (isMuted ? ' muted' : '') + '" data-uid="' + m.id + '" title="' + (isMuted ? 'فتح الصوت' : 'كتم الصوت') + '"><i class="fas fa-fw fa-microphone' + (isMuted ? '-slash' : '') + '"></i></button>' : '';
+    const removeBtn = (isOwner && !isMe) ? '<button class="member-remove-btn" data-uid="' + m.id + '" title="إزالة العضو"><i class="fas fa-times"></i></button>' : '';
     return '<div class="member-item" data-uid="' + m.id + '">' +
       '<div class="member-avatar" style="background:' + COLORS[colorIdx] + '">' + (isMe ? state.username[0].toUpperCase() || '?' : initial) + '</div>' +
       '<div class="member-info">' +
-        '<div class="member-name">' + (isMe ? state.username + ' (أنت)' : m.username || 'مجهول') + '</div>' +
-        '<div class="member-status">' + (m.lat ? '<i class="fas fa-map-pin"></i> الموقع مشترك' : '<i class="fas fa-map-pin"></i> لا يوجد موقع') + '</div>' +
+        '<div class="member-name">' + (isMe ? state.username + ' (أنت)' : m.username || 'مجهول') + (m.id === state.ownerId ? ' <span class="owner-badge">المالك</span>' : '') + '</div>' +
+        '<div class="member-status">' + (m.lat ? '<i class="fas fa-map-pin"></i> الموقع مشترك' : '<i class="fas fa-map-pin"></i> لا يوجد موقع') + (isMuted ? ' <span class="muted-badge">مكتوم</span>' : '') + '</div>' +
       '</div>' +
       '<div class="member-voice off"><i class="fas fa-fw fa-microphone-slash"></i></div>' +
+      muteBtn + removeBtn +
     '</div>';
   }).join('');
+
+  list.querySelectorAll('.member-remove-btn').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const userId = btn.dataset.uid;
+      if (userId && state.roomCode) {
+        state.socket.emit('remove-user', { roomCode: state.roomCode, userId });
+      }
+    });
+  });
+
+  list.querySelectorAll('.member-mute-btn').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const userId = btn.dataset.uid;
+      if (userId && state.roomCode) {
+        state.socket.emit('mute-user', { roomCode: state.roomCode, userId });
+      }
+    });
+  });
 }
 
 function initMap() {
@@ -261,6 +286,7 @@ function connectSocket() {
 
   state.socket.on('room-created', ({ roomCode }) => {
     state.roomCode = roomCode;
+    state.ownerId = state.myId;
     dom.roomCodeDisplay.textContent = roomCode;
     showView('room');
     addSystemMsg('تم إنشاء الغرفة: ' + roomCode);
@@ -268,8 +294,9 @@ function connectSocket() {
     startLocation();
   });
 
-  state.socket.on('room-joined', ({ roomCode }) => {
+  state.socket.on('room-joined', ({ roomCode, ownerId }) => {
     state.roomCode = roomCode;
+    state.ownerId = ownerId;
     dom.roomCodeDisplay.textContent = roomCode;
     showView('room');
     addSystemMsg('تم الانضمام للغرفة: ' + roomCode);
@@ -293,6 +320,29 @@ function connectSocket() {
   state.socket.on('user-left', ({ userId }) => {
     if (state.markers[userId] && state.map) { state.map.removeLayer(state.markers[userId]); delete state.markers[userId]; }
     destroyPeer(userId);
+  });
+
+  state.socket.on('user-removed', ({ roomCode }) => {
+    toast('تم إزالتك من الغرفة', 'error');
+    cleanup();
+    dom.messages.innerHTML = '<div class="msg-placeholder"><i class="fas fa-comments"></i><p>لا توجد رسائل بعد. ابدأ المحادثة!</p></div>';
+    dom.membersList.innerHTML = '<div class="msg-placeholder"><i class="fas fa-users"></i><p>في انتظار الأعضاء...</p></div>';
+    showView('home');
+    dom.homeError.textContent = '';
+    dom.roomInput.value = '';
+  });
+
+  state.socket.on('user-muted', ({ muted }) => {
+    toast(muted ? 'تم كتم صوتك' : 'تم فتح صوتك', muted ? 'error' : 'success');
+  });
+
+  state.socket.on('mute-update', ({ userId, muted }) => {
+    if (muted) {
+      if (!state.mutedUsers.includes(userId)) state.mutedUsers.push(userId);
+    } else {
+      state.mutedUsers = state.mutedUsers.filter(id => id !== userId);
+    }
+    renderMembers();
   });
 
   state.socket.on('chat-message', (data) => addChatMsg(data));
@@ -335,6 +385,8 @@ function cleanup() {
   state.markers = {};
   state.members = {};
   state.roomCode = null;
+  state.ownerId = null;
+  state.mutedUsers = [];
   state.voiceEnabled = false;
   state.locationEnabled = false;
 }
@@ -377,6 +429,7 @@ document.addEventListener('DOMContentLoaded', function () {
       dom.joinBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> انضمام';
       if (res && res.success) {
         state.roomCode = res.roomCode;
+        state.ownerId = res.ownerId;
         dom.roomCodeDisplay.textContent = res.roomCode;
         showView('room');
         addSystemMsg('تم الانضمام للغرفة: ' + res.roomCode);

@@ -34,7 +34,7 @@ io.on('connection', (socket) => {
     do {
       roomCode = Math.floor(100000 + Math.random() * 900000).toString();
     } while (rooms[roomCode]);
-    rooms[roomCode] = { users: [] };
+    rooms[roomCode] = { users: [], ownerId: socket.id };
     socket.join(roomCode);
     rooms[roomCode].users.push({ id: socket.id, username: username || 'Anonymous' });
     callback({ roomCode });
@@ -45,7 +45,7 @@ io.on('connection', (socket) => {
     if (rooms[roomCode]) {
       socket.join(roomCode);
       rooms[roomCode].users.push({ id: socket.id, username: username || 'Anonymous' });
-      callback({ success: true, roomCode, users: rooms[roomCode].users });
+      callback({ success: true, roomCode, users: rooms[roomCode].users, ownerId: rooms[roomCode].ownerId });
       socket.to(roomCode).emit('user-joined', { userId: socket.id, username: username || 'Anonymous' });
       io.to(roomCode).emit('users-update', rooms[roomCode].users);
       io.to(roomCode).emit('chat-message', {
@@ -90,6 +90,50 @@ io.on('connection', (socket) => {
 
   socket.on('voice-toggle', ({ roomCode, enabled }) => {
     socket.to(roomCode).emit('voice-toggle', { userId: socket.id, enabled });
+  });
+
+  socket.on('remove-user', ({ roomCode, userId }) => {
+    if (rooms[roomCode] && rooms[roomCode].ownerId === socket.id) {
+      const user = rooms[roomCode].users.find(u => u.id === userId);
+      if (user && userId !== socket.id) {
+        const idx = rooms[roomCode].users.findIndex(u => u.id === userId);
+        if (idx !== -1) {
+          rooms[roomCode].users.splice(idx, 1);
+          io.to(userId).emit('user-removed', { roomCode });
+          io.to(roomCode).emit('users-update', rooms[roomCode].users);
+          io.to(roomCode).emit('chat-message', {
+            type: 'system',
+            message: `${user.username} تم إزالته من الغرفة`,
+            timestamp: Date.now()
+          });
+        }
+      }
+    }
+  });
+
+  socket.on('mute-user', ({ roomCode, userId }) => {
+    if (rooms[roomCode] && rooms[roomCode].ownerId === socket.id) {
+      const user = rooms[roomCode].users.find(u => u.id === userId);
+      if (user && userId !== socket.id) {
+        if (!rooms[roomCode].mutedUsers) rooms[roomCode].mutedUsers = [];
+        const mutedIdx = rooms[roomCode].mutedUsers.indexOf(userId);
+        let isMuted;
+        if (mutedIdx === -1) {
+          rooms[roomCode].mutedUsers.push(userId);
+          isMuted = true;
+        } else {
+          rooms[roomCode].mutedUsers.splice(mutedIdx, 1);
+          isMuted = false;
+        }
+        io.to(userId).emit('user-muted', { muted: isMuted });
+        io.to(roomCode).emit('mute-update', { userId, muted: isMuted });
+        io.to(roomCode).emit('chat-message', {
+          type: 'system',
+          message: isMuted ? `${user.username} تم كتم صوته` : `${user.username} تم فتح صوته`,
+          timestamp: Date.now()
+        });
+      }
+    }
   });
 
   socket.on('leave-room', ({ roomCode }) => {
