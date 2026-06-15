@@ -32,7 +32,7 @@ io.on('connection', (socket) => {
   socket.on('create-room', ({ username }, callback) => {
     let roomCode;
     do {
-      roomCode = Math.floor(100000 + Math.random() * 900000).toString();
+      roomCode = Math.floor(100 + Math.random() * 900).toString();
     } while (rooms[roomCode]);
     rooms[roomCode] = { users: [], ownerId: socket.id };
     socket.join(roomCode);
