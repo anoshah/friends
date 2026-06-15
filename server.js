@@ -29,28 +29,28 @@ const rooms = {};
 io.on('connection', (socket) => {
   console.log(`Connected: ${socket.id}`);
 
-  socket.on('create-room', (callback) => {
+  socket.on('create-room', ({ username }, callback) => {
     let roomCode;
     do {
       roomCode = Math.floor(100000 + Math.random() * 900000).toString();
     } while (rooms[roomCode]);
     rooms[roomCode] = { users: [] };
     socket.join(roomCode);
-    rooms[roomCode].users.push({ id: socket.id });
+    rooms[roomCode].users.push({ id: socket.id, username: username || 'Anonymous' });
     callback({ roomCode });
     io.to(roomCode).emit('users-update', rooms[roomCode].users);
   });
 
-  socket.on('join-room', ({ roomCode }, callback) => {
+  socket.on('join-room', ({ roomCode, username }, callback) => {
     if (rooms[roomCode]) {
       socket.join(roomCode);
-      rooms[roomCode].users.push({ id: socket.id });
+      rooms[roomCode].users.push({ id: socket.id, username: username || 'Anonymous' });
       callback({ success: true, roomCode, users: rooms[roomCode].users });
-      socket.to(roomCode).emit('user-joined', { userId: socket.id });
+      socket.to(roomCode).emit('user-joined', { userId: socket.id, username: username || 'Anonymous' });
       io.to(roomCode).emit('users-update', rooms[roomCode].users);
       io.to(roomCode).emit('chat-message', {
         type: 'system',
-        message: 'Someone joined the room',
+        message: `${username || 'Someone'} joined the room`,
         timestamp: Date.now()
       });
     } else {
@@ -77,6 +77,7 @@ io.on('connection', (socket) => {
       }
       socket.to(roomCode).emit('location-update', {
         userId: socket.id,
+        username: user ? user.username : 'Anonymous',
         lat,
         lng
       });
@@ -93,6 +94,8 @@ io.on('connection', (socket) => {
 
   socket.on('leave-room', ({ roomCode }) => {
     if (rooms[roomCode]) {
+      const user = rooms[roomCode].users.find(u => u.id === socket.id);
+      const username = user ? user.username : 'Someone';
       const idx = rooms[roomCode].users.findIndex(u => u.id === socket.id);
       if (idx !== -1) {
         rooms[roomCode].users.splice(idx, 1);
@@ -101,7 +104,7 @@ io.on('connection', (socket) => {
         io.to(roomCode).emit('user-left', { userId: socket.id });
         io.to(roomCode).emit('chat-message', {
           type: 'system',
-          message: 'Someone left the room',
+          message: `${username} left the room`,
           timestamp: Date.now()
         });
         if (rooms[roomCode].users.length === 0) delete rooms[roomCode];
@@ -111,6 +114,8 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     for (const roomCode in rooms) {
+      const user = rooms[roomCode].users.find(u => u.id === socket.id);
+      const username = user ? user.username : 'Someone';
       const idx = rooms[roomCode].users.findIndex(u => u.id === socket.id);
       if (idx !== -1) {
         rooms[roomCode].users.splice(idx, 1);
@@ -118,7 +123,7 @@ io.on('connection', (socket) => {
         io.to(roomCode).emit('user-left', { userId: socket.id });
         io.to(roomCode).emit('chat-message', {
           type: 'system',
-          message: 'Someone left the room',
+          message: `${username} left the room`,
           timestamp: Date.now()
         });
         if (rooms[roomCode].users.length === 0) delete rooms[roomCode];

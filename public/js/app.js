@@ -144,17 +144,17 @@ function connectSocket() {
   });
 
   state.socket.on('users-update', (users) => {
-    const prevIds = new Set(Object.keys(state.members));
-    const newIds = new Set(users.map((u) => u.id));
     state.members = {};
     users.forEach((u) => {
-      state.members[u.id] = { id: u.id, lat: u.lat, lng: u.lng };
+      state.members[u.id] = { id: u.id, lat: u.lat, lng: u.lng, username: u.username };
     });
     renderMembers();
     dom.memberCount.innerHTML = `<i class="fas fa-user"></i> ${users.length}`;
   });
 
-  state.socket.on('user-joined', ({ userId }) => {
+  state.socket.on('user-joined', ({ userId, username }) => {
+    state.members[userId] = { id: userId, username };
+    renderMembers();
     initVoicePeer(userId, true);
   });
 
@@ -232,7 +232,7 @@ dom.createBtn.addEventListener('click', () => {
   }
   dom.createBtn.disabled = true;
   dom.createBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
-  state.socket.emit('create-room', (res) => {
+  state.socket.emit('create-room', { username: state.username }, (res) => {
     dom.createBtn.disabled = false;
     dom.createBtn.innerHTML = '<i class="fas fa-plus-circle"></i> Create Room';
     if (res && res.roomCode) {
@@ -262,7 +262,7 @@ dom.joinBtn.addEventListener('click', () => {
   }
   dom.joinBtn.disabled = true;
   dom.joinBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Joining...';
-  state.socket.emit('join-room', { roomCode }, (res) => {
+  state.socket.emit('join-room', { roomCode, username: state.username }, (res) => {
     dom.joinBtn.disabled = false;
     dom.joinBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Join';
     if (res && res.success) {
@@ -272,9 +272,18 @@ dom.joinBtn.addEventListener('click', () => {
       addSystemMsg(`Joined room ${res.roomCode}`);
       res.users.forEach((u) => {
         if (u.id !== state.myId) {
-          state.members[u.id] = { id: u.id, lat: u.lat, lng: u.lng };
+          state.members[u.id] = { id: u.id, lat: u.lat, lng: u.lng, username: u.username };
         }
       });
+      renderMembers();
+      dom.memberCount.innerHTML = `<i class="fas fa-user"></i> ${res.users.length}`;
+      initMap();
+      startLocation();
+    } else {
+      dom.homeError.textContent = (res && res.message) || 'Room not found';
+    }
+  });
+});
       renderMembers();
       dom.memberCount.innerHTML = `<i class="fas fa-user"></i> ${res.users.length}`;
       initMap();
