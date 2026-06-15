@@ -575,6 +575,12 @@ input::placeholder { color: var(--text-light); }
   gap: 12px;
 }
 
+/* ====== MAP MARKERS ====== */
+.marker-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
 /* Leaflet overrides */
 .leaflet-container {
   background: #e2e8f0;

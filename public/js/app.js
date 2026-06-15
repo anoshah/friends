@@ -137,8 +137,20 @@ function updateMarker(userId, lat, lng) {
   const colorIdx = hashId(userId) % COLORS.length;
   const color = COLORS[colorIdx];
   const isMe = userId === state.myId;
-  const marker = L.circleMarker([lat, lng], { radius: isMe ? 10 : 8, fillColor: color, color: '#fff', weight: isMe ? 3 : 2, opacity: 1, fillOpacity: 0.9 }).addTo(state.map);
-  const label = state.members[userId]?.username || 'Anonymous';
+  const label = state.members[userId]?.username || 'مجهول';
+  const initial = label[0].toUpperCase();
+  const size = isMe ? 40 : 34;
+  const fontSize = isMe ? 18 : 15;
+  const borderColor = isMe ? '#fff' : 'rgba(255,255,255,0.8)';
+  const borderWidth = isMe ? 3 : 2;
+  const shadow = isMe ? '0 4px 16px rgba(0,0,0,0.3)' : '0 2px 10px rgba(0,0,0,0.25)';
+  const icon = L.divIcon({
+    className: 'marker-icon',
+    html: '<div style="width:' + size + 'px;height:' + size + 'px;background:' + color + ';border:' + borderWidth + 'px solid ' + borderColor + ';border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:' + fontSize + 'px;box-shadow:' + shadow + ';">' + initial + '</div>',
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2]
+  });
+  const marker = L.marker([lat, lng], { icon }).addTo(state.map);
   marker.bindPopup('<b>' + label + '</b><br/>' + lat.toFixed(4) + ', ' + lng.toFixed(4));
   if (isMe) {
     const pulse = L.circleMarker([lat, lng], { radius: 20, color: color, weight: 1, opacity: 0.3, fillOpacity: 0.1 }).addTo(state.map);
