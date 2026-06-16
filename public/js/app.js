@@ -17,7 +17,6 @@ function cacheDom() {
   dom.homeView = $('#home-view');
   dom.roomView = $('#room-view');
   dom.usernameInput = $('#username-input');
-  dom.createBtn = $('#create-btn');
   dom.roomInput = $('#room-input');
   dom.joinBtn = $('#join-btn');
   dom.homeError = $('#home-error');
@@ -388,30 +387,6 @@ function cleanup() {
 
 document.addEventListener('DOMContentLoaded', function () {
   cacheDom();
-
-  dom.createBtn.addEventListener('click', () => {
-    const username = dom.usernameInput.value.trim();
-    if (!username) { dom.homeError.textContent = 'يرجى إدخال اسمك'; return; }
-    state.username = username;
-    dom.homeError.textContent = '';
-    if (!state.socket.connected) { dom.homeError.textContent = 'غير متصل. يرجى الانتظار...'; return; }
-    dom.createBtn.disabled = true;
-    dom.createBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإنشاء...';
-    state.socket.emit('create-room', { username: state.username }, (res) => {
-      dom.createBtn.disabled = false;
-      dom.createBtn.innerHTML = '<i class="fas fa-plus-circle"></i> إنشاء غرفة';
-      if (res && res.roomCode) {
-        state.roomCode = res.roomCode;
-        state.ownerId = res.ownerId;
-        dom.roomCodeDisplay.textContent = res.roomCode;
-        showView('room');
-        addSystemMsg('تم إنشاء الغرفة: ' + res.roomCode);
-        initMap();
-      } else {
-        dom.homeError.textContent = 'فشل إنشاء الغرفة. حاول مرة أخرى.';
-      }
-    });
-  });
 
   dom.joinBtn.addEventListener('click', () => {
     const roomCode = dom.roomInput.value.trim();

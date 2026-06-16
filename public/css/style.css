@@ -420,6 +420,14 @@ input::placeholder { color: var(--text-light); }
   gap: 10px;
 }
 
+.join-section input {
+  flex: 1;
+}
+
+.join-section .btn {
+  flex-shrink: 0;
+}
+
 .error-msg {
   color: var(--accent-red);
   font-size: 13px;
