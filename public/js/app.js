@@ -217,7 +217,6 @@ function startLocation() {
 function stopLocation() {
   state.locationEnabled = false;
   dom.locationBtn.classList.remove('active');
-  dom.locationBtn.innerHTML = '<i class="fas fa-location-dot" style="color:var(--text-muted)"></i>';
   if (state.locationWatchId !== null) { navigator.geolocation.clearWatch(state.locationWatchId); state.locationWatchId = null; }
 }
 
@@ -291,7 +290,6 @@ function connectSocket() {
     showView('room');
     addSystemMsg('تم الانضمام للغرفة: ' + roomCode);
     initMap();
-    startLocation();
   });
 
   state.socket.on('room-owner', ({ ownerId }) => {
@@ -377,6 +375,8 @@ function cleanup() {
     state.map.remove();
     state.map = null;
   }
+  if (dom.locationBtn) dom.locationBtn.classList.remove('active');
+  if (dom.voiceBtn) dom.voiceBtn.classList.remove('active', 'recording');
   state.markers = {};
   state.members = {};
   state.roomCode = null;
@@ -405,7 +405,6 @@ document.addEventListener('DOMContentLoaded', function () {
         showView('room');
         addSystemMsg('تم إنشاء الغرفة: ' + res.roomCode);
         initMap();
-        startLocation();
       } else {
         dom.homeError.textContent = 'فشل إنشاء الغرفة. حاول مرة أخرى.';
       }
@@ -433,7 +432,6 @@ document.addEventListener('DOMContentLoaded', function () {
         renderMembers();
         dom.memberCount.innerHTML = '<i class="fas fa-user"></i> ' + res.users.length;
         initMap();
-        startLocation();
       } else {
         dom.homeError.textContent = (res && res.message) || 'الغرفة غير موجودة';
       }
@@ -450,16 +448,14 @@ document.addEventListener('DOMContentLoaded', function () {
     if (state.voiceEnabled) {
       if (state.myStream) { state.myStream.getTracks().forEach((t) => t.stop()); state.myStream = null; }
       state.voiceEnabled = false;
-      dom.voiceBtn.classList.remove('recording');
-      dom.voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+      dom.voiceBtn.classList.remove('active', 'recording');
       Object.keys(state.peers).forEach(destroyPeer);
       if (state.roomCode) state.socket.emit('voice-toggle', { roomCode: state.roomCode, enabled: false });
     } else {
       try {
         state.myStream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
         state.voiceEnabled = true;
-        dom.voiceBtn.classList.add('recording');
-        dom.voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+        dom.voiceBtn.classList.add('active', 'recording');
         Object.keys(state.members).forEach((uid) => { if (uid !== state.myId) initVoicePeer(uid, true); });
         if (state.roomCode) state.socket.emit('voice-toggle', { roomCode: state.roomCode, enabled: true });
       } catch (err) { toast('تعذر الوصول إلى الميكروفون', 'error'); }
