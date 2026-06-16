@@ -179,17 +179,19 @@ input::placeholder { color: var(--text-light); }
 /* ====== FORM INPUTS ====== */
 .form-section {
   margin-bottom: 8px;
+  direction: rtl;
 }
 
 .form-row {
   display: flex;
   gap: 12px;
   margin-bottom: 16px;
+  direction: rtl;
 }
 
 .form-group {
   flex: 1;
-  text-align: left;
+  text-align: right;
 }
 
 .form-group label {
@@ -200,6 +202,7 @@ input::placeholder { color: var(--text-light); }
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 8px;
+  text-align: right;
 }
 
 .form-group input {
@@ -211,6 +214,8 @@ input::placeholder { color: var(--text-light); }
   color: var(--text-dark);
   font-size: 15px;
   transition: var(--transition);
+  text-align: right;
+  direction: rtl;
 }
 
 .form-group input:focus {
