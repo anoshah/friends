@@ -34,11 +34,12 @@ io.on('connection', (socket) => {
     do {
       roomCode = Math.floor(100 + Math.random() * 900).toString();
     } while (rooms[roomCode]);
-    rooms[roomCode] = { users: [], ownerId: socket.id };
+    rooms[roomCode] = { users: [], ownerId: socket.id, mutedUsers: [] };
     socket.join(roomCode);
     rooms[roomCode].users.push({ id: socket.id, username: username || 'Anonymous' });
-    callback({ roomCode });
+    callback({ roomCode, ownerId: socket.id });
     io.to(roomCode).emit('users-update', rooms[roomCode].users);
+    io.to(roomCode).emit('room-owner', { ownerId: socket.id });
   });
 
   socket.on('join-room', ({ roomCode, username }, callback) => {

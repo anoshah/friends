@@ -284,16 +284,6 @@ function connectSocket() {
   state.socket.on('reconnect', () => { setConnStatus('connected'); dom.homeError.textContent = ''; });
   state.socket.on('reconnect_failed', () => { setConnStatus('disconnected', 'تعذر إعادة الاتصال. قم بتحديث الصفحة.'); });
 
-  state.socket.on('room-created', ({ roomCode }) => {
-    state.roomCode = roomCode;
-    state.ownerId = state.myId;
-    dom.roomCodeDisplay.textContent = roomCode;
-    showView('room');
-    addSystemMsg('تم إنشاء الغرفة: ' + roomCode);
-    initMap();
-    startLocation();
-  });
-
   state.socket.on('room-joined', ({ roomCode, ownerId }) => {
     state.roomCode = roomCode;
     state.ownerId = ownerId;
@@ -302,6 +292,11 @@ function connectSocket() {
     addSystemMsg('تم الانضمام للغرفة: ' + roomCode);
     initMap();
     startLocation();
+  });
+
+  state.socket.on('room-owner', ({ ownerId }) => {
+    state.ownerId = ownerId;
+    renderMembers();
   });
 
   state.socket.on('users-update', (users) => {
@@ -405,6 +400,7 @@ document.addEventListener('DOMContentLoaded', function () {
       dom.createBtn.innerHTML = '<i class="fas fa-plus-circle"></i> إنشاء غرفة';
       if (res && res.roomCode) {
         state.roomCode = res.roomCode;
+        state.ownerId = res.ownerId;
         dom.roomCodeDisplay.textContent = res.roomCode;
         showView('room');
         addSystemMsg('تم إنشاء الغرفة: ' + res.roomCode);

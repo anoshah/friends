@@ -911,14 +911,12 @@ input::placeholder { color: var(--text-light); }
   justify-content: center;
   transition: var(--transition);
   flex-shrink: 0;
-  opacity: 0;
+  opacity: 0.7;
 }
 
-.member-item:hover .member-remove-btn {
+.member-remove-btn:hover,
+.member-remove-btn:active {
   opacity: 1;
-}
-
-.member-remove-btn:hover {
   background: var(--accent-red);
   color: #fff;
   transform: scale(1.1);
@@ -939,14 +937,12 @@ input::placeholder { color: var(--text-light); }
   justify-content: center;
   transition: var(--transition);
   flex-shrink: 0;
-  opacity: 0;
+  opacity: 0.7;
 }
 
-.member-item:hover .member-mute-btn {
+.member-mute-btn:hover,
+.member-mute-btn:active {
   opacity: 1;
-}
-
-.member-mute-btn:hover {
   transform: scale(1.1);
 }
 
@@ -1206,9 +1202,10 @@ input::placeholder { color: var(--text-light); }
 
   .member-remove-btn,
   .member-mute-btn {
-    width: 26px;
-    height: 26px;
-    font-size: 11px;
+    width: 32px;
+    height: 32px;
+    font-size: 13px;
+    opacity: 1;
   }
 
   /* Chat */
