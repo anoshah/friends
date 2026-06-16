@@ -5,6 +5,7 @@ const state = {
   members: {}, peers: {}, myStream: null, locationWatchId: null,
   myLat: null, myLng: null, locationEnabled: false, voiceEnabled: false,
   map: null, markers: {}, focusInterval: null, mutedUsers: [],
+  unreadCount: 0, isChatTabActive: false,
 };
 
 const COLORS = ['#7c3aed','#06b6d4','#10b981','#f59e0b','#ef4444','#ec4899','#8b5cf6','#14b8a6','#f97316','#3b82f6','#84cc16','#e11d48'];
@@ -30,6 +31,7 @@ function cacheDom() {
   dom.membersList = $('#members-list');
   dom.navTabs = $$('.nav-tab');
   dom.tabContents = $$('.tab-content');
+  dom.chatBadge = $('#chat-badge');
   dom.voiceBtn = $('#voice-btn');
   dom.locationBtn = $('#location-btn');
   dom.mapContainer = $('#map');
@@ -92,12 +94,25 @@ function addChatMsg(data) {
       '<div class="msg-bubble">' + escapeHtml(data.message) + '</div>' +
       '<div class="msg-time">' + time + '</div>';
     dom.messages.appendChild(div);
+    if (!isOwn && !state.isChatTabActive) {
+      state.unreadCount++;
+      updateChatBadge();
+    }
   }
   dom.messages.scrollTop = dom.messages.scrollHeight;
 }
 
 function addSystemMsg(text) {
   addChatMsg({ type: 'system', message: text, timestamp: Date.now() });
+}
+
+function updateChatBadge() {
+  if (state.unreadCount > 0 && !state.isChatTabActive) {
+    dom.chatBadge.textContent = state.unreadCount > 99 ? '99+' : state.unreadCount;
+    dom.chatBadge.classList.add('visible');
+  } else {
+    dom.chatBadge.classList.remove('visible');
+  }
 }
 
 function renderMembers() {
@@ -162,15 +177,22 @@ function updateMarker(userId, lat, lng) {
   const color = COLORS[colorIdx];
   const isMe = userId === state.myId;
   const label = state.members[userId]?.username || 'مجهول';
-  const initial = label[0].toUpperCase();
-  const size = isMe ? 40 : 34;
-  const fontSize = isMe ? 18 : 15;
+  const words = label.trim().split(/\s+/);
+  let initials;
+  if (words.length >= 2) {
+    initials = words[0][0] + words[1][0];
+  } else {
+    initials = label.substring(0, 2);
+  }
+  initials = initials.toUpperCase();
+  const size = isMe ? 44 : 38;
+  const fontSize = isMe ? 16 : 14;
   const borderColor = isMe ? '#fff' : 'rgba(255,255,255,0.8)';
   const borderWidth = isMe ? 3 : 2;
   const shadow = isMe ? '0 4px 16px rgba(0,0,0,0.3)' : '0 2px 10px rgba(0,0,0,0.25)';
   const icon = L.divIcon({
     className: 'marker-icon',
-    html: '<div style="width:' + size + 'px;height:' + size + 'px;background:' + color + ';border:' + borderWidth + 'px solid ' + borderColor + ';border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:' + fontSize + 'px;box-shadow:' + shadow + ';">' + initial + '</div>',
+    html: '<div style="width:' + size + 'px;height:' + size + 'px;background:' + color + ';border:' + borderWidth + 'px solid ' + borderColor + ';border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:' + fontSize + 'px;box-shadow:' + shadow + ';letter-spacing:1px;">' + initials + '</div>',
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2]
   });
@@ -383,6 +405,8 @@ function cleanup() {
   state.mutedUsers = [];
   state.voiceEnabled = false;
   state.locationEnabled = false;
+  state.unreadCount = 0;
+  state.isChatTabActive = false;
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -457,6 +481,7 @@ document.addEventListener('DOMContentLoaded', function () {
     cleanup();
     dom.messages.innerHTML = '<div class="msg-placeholder"><i class="fas fa-comments"></i><p>لا توجد رسائل بعد. ابدأ المحادثة!</p></div>';
     dom.membersList.innerHTML = '<div class="msg-placeholder"><i class="fas fa-users"></i><p>في انتظار الأعضاء...</p></div>';
+    dom.chatBadge.classList.remove('visible');
     showView('home');
     dom.homeError.textContent = '';
     dom.roomInput.value = '';
@@ -468,6 +493,11 @@ document.addEventListener('DOMContentLoaded', function () {
       dom.tabContents.forEach((c) => c.classList.remove('active'));
       tab.classList.add('active');
       document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+      state.isChatTabActive = tab.dataset.tab === 'chat';
+      if (state.isChatTabActive) {
+        state.unreadCount = 0;
+        updateChatBadge();
+      }
       if (tab.dataset.tab === 'map' && state.map) {
         setTimeout(() => state.map.invalidateSize(), 100);
       }

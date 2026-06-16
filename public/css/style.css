@@ -177,12 +177,22 @@ input::placeholder { color: var(--text-light); }
 }
 
 /* ====== FORM INPUTS ====== */
-.username-section {
-  margin-bottom: 20px;
+.form-section {
+  margin-bottom: 8px;
+}
+
+.form-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.form-group {
+  flex: 1;
   text-align: left;
 }
 
-.username-section label {
+.form-group label {
   display: block;
   font-size: 12px;
   font-weight: 600;
@@ -192,8 +202,7 @@ input::placeholder { color: var(--text-light); }
   margin-bottom: 8px;
 }
 
-.username-section input,
-.join-section input {
+.form-group input {
   width: 100%;
   padding: 13px 16px;
   background: var(--bg-subtle);
@@ -204,18 +213,20 @@ input::placeholder { color: var(--text-light); }
   transition: var(--transition);
 }
 
-.username-section input:focus,
-.join-section input:focus {
+.form-group input:focus {
   border-color: var(--accent-blue);
   background: #fff;
   box-shadow: 0 0 0 3px var(--accent-blue-light);
 }
 
-.join-section input {
-  font-size: 20px;
-  font-weight: 700;
-  text-align: center;
-  letter-spacing: 4px;
+.form-group input::placeholder {
+  color: var(--text-light);
+}
+
+.btn-block {
+  width: 100%;
+  padding: 15px;
+  font-size: 16px;
 }
 
 /* ====== BUTTONS ====== */
@@ -416,16 +427,7 @@ input::placeholder { color: var(--text-light); }
 
 /* ====== JOIN SECTION ====== */
 .join-section {
-  display: flex;
-  gap: 10px;
-}
-
-.join-section input {
-  flex: 1;
-}
-
-.join-section .btn {
-  flex-shrink: 0;
+  display: none;
 }
 
 .error-msg {
@@ -714,6 +716,38 @@ input::placeholder { color: var(--text-light); }
   height: 3px;
   background: var(--accent-blue);
   border-radius: 0 0 4px 4px;
+}
+
+/* ====== CHAT BADGE ====== */
+.chat-badge {
+  position: absolute;
+  top: 4px;
+  right: 50%;
+  transform: translateX(calc(50% + 14px));
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: var(--accent-red);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 9px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+}
+
+.chat-badge.visible {
+  display: flex;
+  animation: badgePulse 0.3s ease;
+}
+
+@keyframes badgePulse {
+  0% { transform: translateX(calc(50% + 14px)) scale(0.5); }
+  50% { transform: translateX(calc(50% + 14px)) scale(1.2); }
+  100% { transform: translateX(calc(50% + 14px)) scale(1); }
 }
 
 /* ====== TAB CONTENT ====== */
@@ -1100,10 +1134,13 @@ input::placeholder { color: var(--text-light); }
     font-size: 13px;
   }
 
-  .username-section input,
-  .join-section input {
+  .form-group input {
     padding: 12px 14px;
     font-size: 14px;
+  }
+
+  .form-row {
+    gap: 10px;
   }
 
   .btn {
@@ -1301,6 +1338,11 @@ input::placeholder { color: var(--text-light); }
 
   .nav-tab span {
     font-size: 9px;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 12px;
   }
 }
 
