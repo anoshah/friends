@@ -415,7 +415,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   dom.joinBtn.addEventListener('click', () => {
     const roomCode = dom.roomInput.value.trim();
-    if (!roomCode || roomCode.length < 3) { dom.homeError.textContent = 'يرجى إدخال رمز غرفة صالح'; return; }
+    if (!roomCode || roomCode.length < 3) { dom.homeError.textContent = 'يرجى إدخال 3 أرقام لرمز الغرفة'; return; }
     const username = dom.usernameInput.value.trim();
     if (!username) { dom.homeError.textContent = 'يرجى إدخال اسمك'; return; }
     state.username = username;
@@ -431,13 +431,17 @@ document.addEventListener('DOMContentLoaded', function () {
         state.ownerId = res.ownerId;
         dom.roomCodeDisplay.textContent = res.roomCode;
         showView('room');
-        addSystemMsg('تم الانضمام للغرفة: ' + res.roomCode);
+        if (res.created) {
+          addSystemMsg('تم إنشاء الغرفة: ' + res.roomCode);
+        } else {
+          addSystemMsg('تم الانضمام للغرفة: ' + res.roomCode);
+        }
         res.users.forEach((u) => { if (u.id !== state.myId) state.members[u.id] = { id: u.id, lat: u.lat, lng: u.lng, username: u.username }; });
         renderMembers();
         dom.memberCount.innerHTML = '<i class="fas fa-user"></i> ' + res.users.length;
         initMap();
       } else {
-        dom.homeError.textContent = (res && res.message) || 'الغرفة غير موجودة';
+        dom.homeError.textContent = (res && res.message) || 'حدث خطأ';
       }
     });
   });

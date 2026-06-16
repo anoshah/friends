@@ -55,7 +55,12 @@ io.on('connection', (socket) => {
         timestamp: Date.now()
       });
     } else {
-      callback({ success: false, message: 'Room not found' });
+      rooms[roomCode] = { users: [], ownerId: socket.id, mutedUsers: [] };
+      socket.join(roomCode);
+      rooms[roomCode].users.push({ id: socket.id, username: username || 'Anonymous' });
+      callback({ success: true, roomCode, users: rooms[roomCode].users, ownerId: socket.id, created: true });
+      io.to(roomCode).emit('room-owner', { ownerId: socket.id });
+      io.to(roomCode).emit('users-update', rooms[roomCode].users);
     }
   });
 
