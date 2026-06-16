@@ -814,43 +814,42 @@ input::placeholder { color: var(--text-light); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.msg-own { align-self: flex-end; }
-.msg-other { align-self: flex-start; }
+.msg-own { align-self: flex-end; max-width: 80%; }
+.msg-other { align-self: flex-start; max-width: 80%; }
 
 .msg-username {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-medium);
-  padding: 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 12px 12px 12px 4px;
+  display: inline-block;
+  margin-bottom: 4px;
+  letter-spacing: 0.3px;
 }
 
 .msg-bubble {
-  padding: 11px 16px;
+  padding: 12px 18px;
   border-radius: 18px;
-  font-size: 14px;
-  line-height: 1.55;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.6;
   word-break: break-word;
 }
 
 .msg-own .msg-bubble {
-  background: var(--gradient-blue);
-  color: #fff;
   border-bottom-right-radius: 6px;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
 }
 
 .msg-other .msg-bubble {
-  background: #fff;
-  color: var(--text-dark);
   border-bottom-left-radius: 6px;
-  border: 1px solid var(--border-light);
-  box-shadow: var(--shadow-sm);
 }
 
 .msg-time {
   font-size: 10px;
   color: var(--text-light);
-  padding: 0 8px;
+  padding: 2px 8px 0;
+  font-weight: 500;
 }
 
 .msg-own .msg-time { text-align: right; }
@@ -1277,8 +1276,13 @@ input::placeholder { color: var(--text-light); }
   }
 
   .msg-bubble {
-    padding: 10px 14px;
-    font-size: 13px;
+    padding: 11px 16px;
+    font-size: 14px;
+  }
+
+  .msg-username {
+    font-size: 11px;
+    padding: 3px 10px;
   }
 
   .chat-input-area {

@@ -86,13 +86,21 @@ function addChatMsg(data) {
     dom.messages.appendChild(div);
   } else {
     const isOwn = data.userId === state.myId;
+    const colorIdx = hashId(data.userId) % COLORS.length;
+    const userColor = COLORS[colorIdx];
     const div = document.createElement('div');
     div.className = 'msg ' + (isOwn ? 'msg-own' : 'msg-other');
     const time = new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    div.innerHTML =
-      (isOwn ? '' : '<div class="msg-username">' + escapeHtml(data.username) + '</div>') +
-      '<div class="msg-bubble">' + escapeHtml(data.message) + '</div>' +
-      '<div class="msg-time">' + time + '</div>';
+    if (isOwn) {
+      div.innerHTML =
+        '<div class="msg-bubble" style="background:' + userColor + ';box-shadow:0 2px 12px ' + userColor + '40;">' + escapeHtml(data.message) + '</div>' +
+        '<div class="msg-time">' + time + '</div>';
+    } else {
+      div.innerHTML =
+        '<div class="msg-username" style="background:' + userColor + ';color:#fff;">' + escapeHtml(data.username) + '</div>' +
+        '<div class="msg-bubble" style="background:' + userColor + '18;border:1px solid ' + userColor + '40;color:#1e293b;">' + escapeHtml(data.message) + '</div>' +
+        '<div class="msg-time">' + time + '</div>';
+    }
     dom.messages.appendChild(div);
     if (!isOwn && !state.isChatTabActive) {
       state.unreadCount++;
