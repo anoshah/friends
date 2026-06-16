@@ -827,11 +827,12 @@ input::placeholder { color: var(--text-light); }
 
 .msg-bubble {
   padding: 10px 14px;
-  font-size: 17px;
+  font-size: 19px;
   font-weight: 600;
   line-height: 1.7;
   word-break: break-word;
   letter-spacing: 0.2px;
+  color: #1a1a1a;
 }
 
 .msg-own .msg-bubble {
@@ -1272,7 +1273,7 @@ input::placeholder { color: var(--text-light); }
 
   .msg-bubble {
     padding: 8px 12px;
-    font-size: 16px;
+    font-size: 18px;
   }
 
   .msg-username {
