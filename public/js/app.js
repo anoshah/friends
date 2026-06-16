@@ -390,7 +390,9 @@ document.addEventListener('DOMContentLoaded', function () {
   cacheDom();
 
   dom.createBtn.addEventListener('click', () => {
-    state.username = dom.usernameInput.value.trim() || 'مجهول';
+    const username = dom.usernameInput.value.trim();
+    if (!username) { dom.homeError.textContent = 'يرجى إدخال اسمك'; return; }
+    state.username = username;
     dom.homeError.textContent = '';
     if (!state.socket.connected) { dom.homeError.textContent = 'غير متصل. يرجى الانتظار...'; return; }
     dom.createBtn.disabled = true;
@@ -414,7 +416,9 @@ document.addEventListener('DOMContentLoaded', function () {
   dom.joinBtn.addEventListener('click', () => {
     const roomCode = dom.roomInput.value.trim();
     if (!roomCode || roomCode.length < 3) { dom.homeError.textContent = 'يرجى إدخال رمز غرفة صالح'; return; }
-    state.username = dom.usernameInput.value.trim() || 'مجهول';
+    const username = dom.usernameInput.value.trim();
+    if (!username) { dom.homeError.textContent = 'يرجى إدخال اسمك'; return; }
+    state.username = username;
     dom.homeError.textContent = '';
     if (!state.socket.connected) { dom.homeError.textContent = 'غير متصل. يرجى الانتظار...'; return; }
     dom.joinBtn.disabled = true;
