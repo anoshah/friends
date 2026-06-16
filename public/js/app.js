@@ -468,8 +468,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
   dom.shareBtn.addEventListener('click', () => {
     if (!state.roomCode) return;
-    const text = 'Join my Fada room! Code: ' + state.roomCode + '\n' + window.location.origin;
-    if (navigator.share) { navigator.share({ title: 'غرفة Fada', text }).catch(() => {}); }
+    const text = 'Join my Friends room! Code: ' + state.roomCode + '\n' + window.location.origin;
+    if (navigator.share) { navigator.share({ title: 'غرفة Friends', text }).catch(() => {}); }
     else { navigator.clipboard.writeText(state.roomCode).then(() => toast('تم نسخ رمز الغرفة!', 'success')).catch(() => toast('الغرفة: ' + state.roomCode, 'info')); }
   });
 
@@ -500,5 +500,5 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   connectSocket();
-  console.log('Fada loaded.');
+  console.log('Friends loaded.');
 });
