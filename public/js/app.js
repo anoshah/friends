@@ -418,7 +418,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   dom.joinBtn.addEventListener('click', () => {
     const roomCode = dom.roomInput.value.trim();
-    if (!roomCode || roomCode.length < 4) { dom.homeError.textContent = 'يرجى إدخال رمز غرفة صالح'; return; }
+    if (!roomCode || roomCode.length < 3) { dom.homeError.textContent = 'يرجى إدخال رمز غرفة صالح'; return; }
     state.username = dom.usernameInput.value.trim() || 'مجهول';
     dom.homeError.textContent = '';
     if (!state.socket.connected) { dom.homeError.textContent = 'غير متصل. يرجى الانتظار...'; return; }
