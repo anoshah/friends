@@ -818,19 +818,15 @@ input::placeholder { color: var(--text-light); }
 .msg-other { align-self: flex-start; max-width: 80%; }
 
 .msg-username {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
-  color: #fff;
-  padding: 4px 12px;
-  border-radius: 12px 12px 12px 4px;
-  display: inline-block;
-  margin-bottom: 4px;
+  padding: 0 4px;
+  margin-bottom: 2px;
   letter-spacing: 0.3px;
 }
 
 .msg-bubble {
-  padding: 12px 18px;
-  border-radius: 18px;
+  padding: 8px 12px;
   font-size: 15px;
   font-weight: 500;
   line-height: 1.6;
@@ -838,11 +834,9 @@ input::placeholder { color: var(--text-light); }
 }
 
 .msg-own .msg-bubble {
-  border-bottom-right-radius: 6px;
 }
 
 .msg-other .msg-bubble {
-  border-bottom-left-radius: 6px;
 }
 
 .msg-time {
@@ -1276,13 +1270,12 @@ input::placeholder { color: var(--text-light); }
   }
 
   .msg-bubble {
-    padding: 11px 16px;
+    padding: 6px 10px;
     font-size: 14px;
   }
 
   .msg-username {
-    font-size: 11px;
-    padding: 3px 10px;
+    font-size: 12px;
   }
 
   .chat-input-area {

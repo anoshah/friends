@@ -93,12 +93,12 @@ function addChatMsg(data) {
     const time = new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     if (isOwn) {
       div.innerHTML =
-        '<div class="msg-bubble" style="background:' + userColor + ';box-shadow:0 2px 12px ' + userColor + '40;">' + escapeHtml(data.message) + '</div>' +
+        '<div class="msg-bubble" style="color:' + userColor + ';">' + escapeHtml(data.message) + '</div>' +
         '<div class="msg-time">' + time + '</div>';
     } else {
       div.innerHTML =
-        '<div class="msg-username" style="background:' + userColor + ';color:#fff;">' + escapeHtml(data.username) + '</div>' +
-        '<div class="msg-bubble" style="background:' + userColor + '18;border:1px solid ' + userColor + '40;color:#1e293b;">' + escapeHtml(data.message) + '</div>' +
+        '<div class="msg-username" style="color:' + userColor + ';">' + escapeHtml(data.username) + '</div>' +
+        '<div class="msg-bubble" style="color:' + userColor + ';">' + escapeHtml(data.message) + '</div>' +
         '<div class="msg-time">' + time + '</div>';
     }
     dom.messages.appendChild(div);
